@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}{{ package.name }} - 企业邮箱商城{% endblock %}
+{% block meta_robots %}noindex,follow,noarchive{% endblock %}
+{% block nav_agent_apply_link %}{% endblock %}
+
+{% block content %}
+<section class="detail-layout">
+    <article class="detail-main">
+        <section class="card detail-hero-card">
+            <div class="detail-hero-top">
+                <div>
+                    <p class="panel-tag">{% if package.stock_mode == "group" %}按组购买{% else %}按条购买{% endif %}</p>
+                    <h1>{{ package.name }}</h1>
+                    {% if package.subtitle %}
+                        <p class="muted detail-subtitle">{{ package.subtitle }}</p>
+                    {% endif %}
+                </div>
+                <div class="price-box detail-price-box">
+                    <span class="price">¥{{ agent_price.sale_price }}</span>
+                    <span class="detail-price-note">支付后自动发货</span>
+                </div>
+            </div>
+            <p class="detail-summary">{{ package.description|linebreaksbr }}</p>
+
+            <div class="quick-facts detail-facts">
+                <div class="fact-card fact-card-emphasis">
+                    <span class="fact-label">发货方式</span>
+                    {% if package.stock_mode == "group" %}
+                        <strong>按组原样发货</strong>
+                        <span class="muted">每组约 47 到 50 条</span>
+                    {% else %}
+                        <strong>按条自动发货</strong>
+                    {% endif %}
+                </div>
+                <div class="fact-card fact-card-emphasis">
+                    <span class="fact-label">实时库存</span>
+                    <strong id="stock-summary" data-inventory-url="{% url 'inventory_status' package.pk %}">{{ package.available_unit_count }} {{ unit_label }}</strong>
+                </div>
+                <div class="fact-card">
+                    <span class="fact-label">售后处理</span>
+                    <strong>平台统一处理</strong>
+                </div>
+                <div class="fact-card">
+                    <span class="fact-label">提取方式</span>
+                    <strong>支付后回订单页提取</strong>
+                </div>
+            </div>
+            {% if agent.contact_qq or agent.contact_wechat %}
+                <div class="compact-note-list detail-note-list">
+                    {% if agent.contact_qq %}<div>QQ：{{ agent.contact_qq }}</div>{% endif %}
+                    {% if agent.contact_wechat %}<div>微信：{{ agent.contact_wechat }}</div>{% endif %}
+                </div>
+            {% endif %}
+            {% if agent.contact_image_1 or agent.contact_image_2 %}
+                <div class="contact-qr-grid">
+                    {% if agent.contact_image_1 %}
+                        <div class="support-mini-card qr-mini-card">
+                            <h3>联系方式图片 1</h3>
+                            <div class="qr-card small">
+                                <img class="qr-image" src="{{ agent.contact_image_1.url }}" alt="代理联系方式图片1">
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if agent.contact_image_2 %}
+                        <div class="support-mini-card qr-mini-card">
+                            <h3>联系方式图片 2</h3>
+                            <div class="qr-card small">
+                                <img class="qr-image" src="{{ agent.contact_image_2.url }}" alt="代理联系方式图片2">
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </section>
+    </article>
+
+    <aside class="detail-side">
+        <section class="card purchase-card sticky-card">
+            <div class="purchase-card-top">
+                <div>
+                    <p class="panel-tag">在线下单</p>
+                    <h2>立即购买</h2>
+                </div>
+                <span class="hero-status-pill hero-status-light">走平台付款与自动发货</span>
+            </div>
+            <form method="post" action="{% url 'agent_create_order' agent.code package.pk %}" class="order-form order-form-enhanced">
+                {% csrf_token %}
+                <label for="buyer_name">姓名</label>
+                <input id="buyer_name" name="buyer_name" type="text" placeholder="可不填">
+
+                <label for="buyer_contact">联系方式</label>
+                <input id="buyer_contact" name="buyer_contact" type="text" placeholder="手机号 / QQ / 其他可联系信息" required>
+
+                <label for="pickup_password">提取密码</label>
+                <input id="pickup_password" name="pickup_password" type="password" placeholder="自己设置一个提取密码" required>
+
+                <label for="quantity">购买数量</label>
+                <input
+                    id="quantity"
+                    name="quantity"
+                    type="number"
+                    min="1"
+                    max="{{ package.available_unit_count }}"
+                    value="1"
+                    inputmode="numeric"
+                    required
+                >
+                <p class="muted" id="stock-limit-text">当前最多可买 {{ package.available_unit_count }} {{ unit_label }}</p>
+
+                <button class="button button-large" id="submit-button" type="submit">创建订单并去支付</button>
+            </form>
+            <p class="muted order-tip">付款前先填写联系方式和提取密码，支付成功后可直接回订单页提取。</p>
+        </section>
+    </aside>
+</section>
+
+<script>
+async function refreshDetailInventory() {
+    const summary = document.getElementById("stock-summary");
+    const quantity = document.getElementById("quantity");
+    const limitText = document.getElementById("stock-limit-text");
+    const submitButton = document.getElementById("submit-button");
+    if (!summary || !summary.dataset.inventoryUrl) return;
+
+    try {
+        const response = await fetch(summary.dataset.inventoryUrl, {cache: "no-store"});
+        if (!response.ok) return;
+        const data = await response.json();
+        summary.textContent = `${data.available_unit_count} ${data.unit_label}`;
+        if (limitText) {
+            limitText.textContent = `当前最多可买 ${data.available_unit_count} ${data.unit_label}`;
+        }
+        if (quantity) {
+            quantity.max = String(data.available_unit_count);
+            if (data.available_unit_count <= 0) {
+                quantity.value = "0";
+                quantity.disabled = true;
+            } else {
+                quantity.disabled = false;
+                if (!quantity.value || Number(quantity.value) < 1) {
+                    quantity.value = "1";
+                }
+                if (Number(quantity.value) > data.available_unit_count) {
+                    quantity.value = String(data.available_unit_count);
+                }
+            }
+        }
+        if (submitButton) {
+            submitButton.disabled = data.available_unit_count <= 0;
+            submitButton.textContent = data.available_unit_count <= 0 ? "当前无库存" : "创建订单并去支付";
+        }
+    } catch (error) {
+    }
+}
+
+refreshDetailInventory();
+setInterval(refreshDetailInventory, 5000);
+</script>
+{% endblock %}

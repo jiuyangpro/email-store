@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ package.name }}_企业邮箱购买_企业邮箱商城{% endblock %}
+{% block og_title %}{{ package.name }}_企业邮箱购买_企业邮箱商城{% endblock %}
+{% block meta_description %}{{ package.name }}支持企业邮箱购买，库存实时同步，可按条购买或按组购买，支付成功后自助提取。{% endblock %}
+{% block og_description %}{{ package.name }}支持企业邮箱购买，库存实时同步，可按条购买或按组购买，支付成功后自助提取。{% endblock %}
+{% block meta_keywords %}{{ package.name }},企业邮箱购买,企业邮箱,企业邮箱出售,自助提取{% endblock %}
+{% block canonical_url %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}
+{% block canonical_link %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}
+
+{% block content %}
+<section class="detail-layout">
+    <article class="detail-main">
+        <section class="card detail-hero-card">
+            <div class="detail-hero-top">
+                <div>
+                    <p class="panel-tag">{% if package.stock_mode == "group" %}按组购买{% else %}按条购买{% endif %}</p>
+                    <h1>{{ package.name }}</h1>
+                    {% if package.subtitle %}
+                        <p class="muted detail-subtitle">{{ package.subtitle }}</p>
+                    {% endif %}
+                </div>
+                <div class="price-box detail-price-box">
+                    <span class="price">¥{{ package.price }}</span>
+                    {% if package.original_price %}
+                        <span class="old-price">¥{{ package.original_price }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <p class="detail-summary">{{ package.description|linebreaksbr }}</p>
+
+            {% if package.delivery_mode == "stock" %}
+                <div class="quick-facts detail-facts">
+                    <div class="fact-card fact-card-emphasis">
+                        <span class="fact-label">发货方式</span>
+                        {% if package.stock_mode == "group" %}
+                            <strong>按组原样发货</strong>
+                            <span class="muted">每组约 47 到 50 条</span>
+                        {% else %}
+                            <strong>按条自动发货</strong>
+                        {% endif %}
+                    </div>
+                    <div class="fact-card fact-card-emphasis">
+                        <span class="fact-label">实时库存</span>
+                        {% if package.stock_mode == "group" %}
+                            <strong id="stock-summary" data-inventory-url="{% url 'inventory_status' package.pk %}">{{ package.available_unit_count }} 组</strong>
+                        {% else %}
+                            <strong id="stock-summary" data-inventory-url="{% url 'inventory_status' package.pk %}">{{ package.available_unit_count }} 条</strong>
+                        {% endif %}
+                    </div>
+                    <div class="fact-card">
+                        <span class="fact-label">售后保障</span>
+                        <strong>邮箱质保三个月</strong>
+                    </div>
+                    <div class="fact-card">
+                        <span class="fact-label">默认密码</span>
+                        <strong>123456</strong>
+                    </div>
+                </div>
+
+                <div class="detail-info-grid">
+                    <section class="card info-subcard">
+                        <div class="section-title-row">
+                            <div>
+                                <p class="panel-tag">购买说明</p>
+                                <h3>使用与交付规则</h3>
+                            </div>
+                        </div>
+                        <div class="feature-list feature-list-single">
+                            <div class="feature-item">
+                                <strong>当前网站即购买入口</strong>
+                                <span>购买、支付、提取都在本站完成，不需要跳到第二个购买网站。</span>
+                            </div>
+                            <div class="feature-item">
+                                <strong>自动发货说明</strong>
+                                <span>付款成功后由平台自动发货，提取仍然走本站订单页，不需要人工发货。</span>
+                            </div>
+                            {% if package.stock_mode == "group" %}
+                                <div class="feature-item">
+                                    <strong>按组权限说明</strong>
+                                    <span>按组购买享有管理员权限，一组约 47 到 50 条，整组原样发货。</span>
+                                </div>
+                            {% else %}
+                                <div class="feature-item">
+                                    <strong>按条购买说明</strong>
+                                    <span>适合零散购买，买几条发几条，按顺序自动交付。</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </section>
+
+                    <section class="card info-subcard">
+                        <div class="section-title-row">
+                            <div>
+                                <p class="panel-tag">下单提醒</p>
+                                <h3>下单前请先确认</h3>
+                            </div>
+                        </div>
+                        <div class="compact-note-list detail-note-list">
+                            <div>购买网站只有当前这个网站</div>
+                            <div>支付成功后自动发货，回订单页即可提取</div>
+                            {% if package.stock_mode == "group" %}
+                                <div>按组购买享有管理员权限，一组约 47 到 50 条</div>
+                            {% endif %}
+                        </div>
+                    </section>
+
+                    <section class="card info-subcard">
+                        <div class="section-title-row">
+                            <div>
+                                <p class="panel-tag">长期使用说明</p>
+                                <h3>稳定使用相关说明</h3>
+                            </div>
+                        </div>
+                        <div class="compact-note-list detail-note-list">
+                            <div>所有邮箱均可长期使用，后续只需按正常规则续费域名即可继续使用。</div>
+                            <div>域名默认有效期一年，到期前按正常规则续费即可继续长期使用。</div>
+                            <div>每一组都是独立后台，不是共用大后台，日常使用更稳。</div>
+                            <div>按当前历史反馈，整体封控率极低，已经售出了几千组，暂未收到整组封控反馈。</div>
+                            <div>正常使用场景下，绝对不会存在删除，也不会出现被他人改密码的情况。</div>
+                            <div>做游戏账号最重要的就是稳定和长期使用，适合长期养号与持续使用。</div>
+                            <div>所有域名均独立处理，不会全部关联在一起，单独异常也不会连带影响到你的整组使用。</div>
+                        </div>
+                    </section>
+                </div>
+            {% else %}
+                <section class="card info-subcard">
+                    <h3>包含文档</h3>
+                    <ul class="doc-list">
+                        {% for document in package.documents.all %}
+                            <li>
+                                <strong>{{ document.title }}</strong>
+                                <span class="muted">{{ document.summary|default:"暂无简介" }}</span>
+                            </li>
+                        {% empty %}
+                            <li>当前套餐还没有挂文档。</li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            {% endif %}
+        </section>
+    </article>
+
+    <aside class="detail-side">
+        <section class="card purchase-card sticky-card">
+            <div class="purchase-card-top">
+                <div>
+                    <p class="panel-tag">安全下单</p>
+                    <h2>立即下单</h2>
+                </div>
+                <span class="hero-status-pill hero-status-light">当前网站直接提取</span>
+            </div>
+            <form method="post" action="{% url 'create_order' package.pk %}" class="order-form order-form-enhanced">
+                {% csrf_token %}
+                <label for="buyer_name">姓名</label>
+                <input id="buyer_name" name="buyer_name" type="text" placeholder="可不填">
+
+                <label for="buyer_contact">联系方式</label>
+                <input id="buyer_contact" name="buyer_contact" type="text" placeholder="QQ / 微信 / 手机号" required>
+
+                <label for="pickup_password">提取密码</label>
+                <input id="pickup_password" name="pickup_password" type="password" placeholder="自己设置一个提取密码" required>
+
+                {% if package.delivery_mode == "stock" %}
+                    <label for="quantity">购买数量</label>
+                    <input
+                        id="quantity"
+                        name="quantity"
+                        type="number"
+                        min="1"
+                        max="{{ package.available_unit_count }}"
+                        value="1"
+                        inputmode="numeric"
+                        placeholder="自己输入购买数量"
+                        required
+                    >
+                    <p class="muted" id="stock-limit-text">当前最多可买 {{ package.available_unit_count }} {{ unit_label }}</p>
+                {% endif %}
+
+                <button class="button button-large" id="submit-button" type="submit">创建订单</button>
+            </form>
+            <p class="muted order-tip">付款前先填写联系方式和提取密码，支付成功后可直接回本站自助提取。</p>
+
+            <div class="order-support-grid">
+                <div class="support-mini-card support-mini-card-dark">
+                    <h3>提取方式</h3>
+                    <p>联系方式 + 提取密码</p>
+                    <a class="button secondary" href="{% url 'pickup_lookup' %}">打开自助提取</a>
+                </div>
+                <div class="contact-qr-grid">
+                    {% if site_contact_config and site_contact_config.contact_image_1 %}
+                        <div class="support-mini-card qr-mini-card">
+                            <h3>联系方式图片 1</h3>
+                            <div class="qr-card small">
+                                <img class="qr-image" src="{{ site_contact_config.contact_image_1.url }}" alt="联系方式图片1">
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if site_contact_config and site_contact_config.contact_image_2 %}
+                        <div class="support-mini-card qr-mini-card">
+                            <h3>联系方式图片 2</h3>
+                            <div class="qr-card small">
+                                <img class="qr-image" src="{{ site_contact_config.contact_image_2.url }}" alt="联系方式图片2">
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if not site_contact_config or not site_contact_config.contact_image_1 and not site_contact_config.contact_image_2 %}
+                        <div class="support-mini-card qr-mini-card">
+                            <h3>联系方式</h3>
+                            <p class="muted">后台暂未上传联系方式图片。</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+    </aside>
+</section>
+
+<script>
+async function refreshDetailInventory() {
+    const summary = document.getElementById("stock-summary");
+    const quantity = document.getElementById("quantity");
+    const limitText = document.getElementById("stock-limit-text");
+    const submitButton = document.getElementById("submit-button");
+    if (!summary || !summary.dataset.inventoryUrl) return;
+
+    try {
+        const response = await fetch(summary.dataset.inventoryUrl, {cache: "no-store"});
+        if (!response.ok) return;
+        const data = await response.json();
+        summary.textContent = `当前剩余 ${data.available_unit_count} ${data.unit_label}`;
+        if (limitText) {
+            limitText.textContent = `当前最多可买 ${data.available_unit_count} ${data.unit_label}`;
+        }
+        if (quantity) {
+            quantity.max = String(data.available_unit_count);
+            if (data.available_unit_count <= 0) {
+                quantity.value = "0";
+                quantity.disabled = true;
+            } else {
+                quantity.disabled = false;
+                if (!quantity.value || Number(quantity.value) < 1) {
+                    quantity.value = "1";
+                }
+                if (Number(quantity.value) > data.available_unit_count) {
+                    quantity.value = String(data.available_unit_count);
+                }
+            }
+        }
+        if (submitButton) {
+            submitButton.disabled = data.available_unit_count <= 0;
+            if (data.available_unit_count <= 0) {
+                submitButton.textContent = "当前无库存";
+            } else {
+                submitButton.textContent = "创建订单";
+            }
+        }
+    } catch (error) {
+    }
+}
+
+refreshDetailInventory();
+setInterval(refreshDetailInventory, 5000);
+</script>
+{% endblock %}

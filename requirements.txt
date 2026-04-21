@@ -1,0 +1,4 @@
+Django==6.0.4
+gunicorn==23.0.0
+Pillow==11.2.1
+cryptography==46.0.2

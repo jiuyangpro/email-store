@@ -1,0 +1,173 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="运营后台">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="{% static 'admin/admin.webmanifest' %}">
+<link rel="apple-touch-icon" href="{% static 'admin/admin-icon-180.png' %}">
+<link rel="icon" type="image/png" sizes="180x180" href="{% static 'admin/admin-icon-180.png' %}">
+<link rel="stylesheet" href="{% static 'admin/mobile-admin.css' %}">
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    #header {
+        background: linear-gradient(135deg, #111827, #1f2937);
+        color: #f8fafc;
+    }
+    #branding h1, #branding h1 a:link, #branding h1 a:visited {
+        color: #f8fafc;
+    }
+    .module h2, .module caption, .inline-group h2 {
+        background: #0f172a;
+    }
+    .admin-dashboard {
+        display: grid;
+        gap: 24px;
+        padding-top: 8px;
+    }
+    .dashboard-hero {
+        background: #fff;
+        border-radius: 18px;
+        padding: 28px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+    .dashboard-hero h1 {
+        margin: 0 0 10px;
+        font-size: 30px;
+    }
+    .dashboard-hero p {
+        margin: 0;
+        color: #475569;
+    }
+    .dashboard-notice {
+        margin-top: 14px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+        font-weight: 600;
+    }
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+    .dashboard-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+    }
+    .summary-card {
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        color: #f8fafc;
+        border-radius: 18px;
+        padding: 22px 24px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+    }
+    .summary-label {
+        display: block;
+        margin-bottom: 10px;
+        color: #cbd5e1;
+        font-size: 14px;
+    }
+    .summary-value {
+        display: block;
+        font-size: 30px;
+        line-height: 1.1;
+        margin-bottom: 8px;
+    }
+    .summary-card p {
+        margin: 0;
+        color: #cbd5e1;
+    }
+    .dashboard-review-strip {
+        display: block;
+    }
+    .review-card {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        align-items: center;
+        background: linear-gradient(135deg, #7f1d1d, #b91c1c);
+        color: #fff;
+        border-radius: 18px;
+        padding: 22px 24px;
+        box-shadow: 0 12px 30px rgba(127, 29, 29, 0.18);
+    }
+    .review-label {
+        display: block;
+        margin-bottom: 8px;
+        color: #fecaca;
+        font-size: 14px;
+    }
+    .review-value {
+        display: block;
+        font-size: 28px;
+        line-height: 1.15;
+        margin-bottom: 8px;
+    }
+    .review-card p {
+        margin: 0;
+        color: #fee2e2;
+    }
+    .review-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .button-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0 16px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.15);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    .button-link.primary-link {
+        background: #fff;
+        color: #991b1b;
+    }
+    .dashboard-card {
+        display: block;
+        background: #fff;
+        border-radius: 18px;
+        padding: 24px;
+        color: #111827;
+        text-decoration: none;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+        border: 1px solid rgba(148, 163, 184, 0.15);
+    }
+    .dashboard-card h2 {
+        margin: 0 0 10px;
+        font-size: 22px;
+    }
+    .dashboard-card p {
+        margin: 0;
+        color: #64748b;
+        line-height: 1.7;
+    }
+    @media (max-width: 900px) {
+        .review-card,
+        .dashboard-summary-grid,
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+        .review-card {
+            display: grid;
+        }
+    }
+</style>
+{% endblock %}

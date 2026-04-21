@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}申请代理 - 企业邮箱商城{% endblock %}
+{% block meta_robots %}noindex,nofollow,noarchive{% endblock %}
+
+{% block content %}
+<section class="card order-card">
+    <h1>申请代理</h1>
+    <p class="muted">代理可自行加价销售，付款和自动发货仍由平台统一处理。资料填好并提交后，系统会自动开通你的代理后台并生成专属推广链接。</p>
+    <form method="post" class="order-form">
+        {% csrf_token %}
+        <label for="phone">手机号</label>
+        <input id="phone" name="phone" type="text" placeholder="后续登录和联系都用这个手机号" required>
+
+        <label for="email">绑定邮箱</label>
+        <input id="email" name="email" type="email" placeholder="注册和找回密码都用这个邮箱" required>
+
+        <label for="email_code">邮箱验证码</label>
+        <div class="inline-field-row">
+            <input id="email_code" name="email_code" type="text" inputmode="numeric" placeholder="输入邮箱验证码" required>
+            <button
+                class="button secondary send-email-code-btn"
+                type="button"
+                data-purpose="register"
+                data-email-field="email"
+                data-status-id="agent-apply-email-status"
+                data-send-url="{% url 'agent_send_email_code' %}"
+            >发送验证码</button>
+        </div>
+        <p id="agent-apply-email-status" class="muted"></p>
+        <p class="muted">如果收件箱没看到验证码，请顺手检查一下垃圾邮箱。</p>
+
+        <label for="nickname">代理昵称</label>
+        <input id="nickname" name="nickname" type="text" placeholder="方便后台识别" required>
+
+        <label for="password">登录密码</label>
+        <input id="password" name="password" type="password" placeholder="设置一个代理后台密码" required>
+
+        <label for="contact_qq">公开 QQ</label>
+        <input id="contact_qq" name="contact_qq" type="text" placeholder="显示在代理页面，给客户咨询用">
+
+        <label for="contact_wechat">公开微信号</label>
+        <input id="contact_wechat" name="contact_wechat" type="text" placeholder="显示在代理页面，给客户咨询用">
+
+        <label for="payee_name">收款姓名</label>
+        <input id="payee_name" name="payee_name" type="text" placeholder="结算时核对姓名" required>
+
+        <label for="wechat_id">微信号</label>
+        <input id="wechat_id" name="wechat_id" type="text" placeholder="可选，但微信号和支付宝至少填一个">
+
+        <label for="alipay_account">支付宝账号</label>
+        <input id="alipay_account" name="alipay_account" type="text" placeholder="可选，但微信号和支付宝至少填一个">
+
+        <button class="button" type="submit">立即开通代理</button>
+    </form>
+    <div class="compact-note-list detail-note-list">
+        <div>按条底价固定 0.30，按组底价固定 25.00</div>
+        <div>代理只能加价，不能低于平台底价</div>
+        <div>代理页面可展示代理自己的 QQ / 微信，方便客户咨询</div>
+        <div>支付、发货、提取仍由平台统一处理，代理只负责推广和改价</div>
+        <div>注册时必须先完成邮箱验证，后续忘记密码也可以直接用邮箱找回</div>
+        <div>邮箱验证码有时会被系统判到垃圾邮箱，没收到时请先检查垃圾邮箱</div>
+        <div>同一个 IP 只能注册 1 个代理账号，提交成功后会自动生成专属推广链接</div>
+    </div>
+    <div class="actions">
+        <a class="button secondary" href="{% url 'agent_login' %}">已有账号，去登录</a>
+    </div>
+</section>
+<script src="{% static 'store/email-code-helper.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page.title }}{% endblock %}
+{% block og_title %}{{ page.title }}{% endblock %}
+{% block meta_description %}{{ page.description }}{% endblock %}
+{% block og_description %}{{ page.description }}{% endblock %}
+{% block meta_keywords %}{{ page.keywords }}{% endblock %}
+{% block canonical_link %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}
+{% block canonical_url %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "{{ page.title|escapejs }}",
+  "url": "{{ request.scheme }}://{{ request.get_host }}{{ request.path }}",
+  "description": "{{ page.description|escapejs }}"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="single-screen-shell">
+    <section class="hero-overview">
+        <div class="hero-main-card">
+            <p class="eyebrow">企业邮箱专题页</p>
+            <h1>{{ page.heading }}</h1>
+            <p class="landing-text">{{ page.intro }}</p>
+            <div class="hero-note-grid">
+                <div class="hero-note-card">
+                    <span class="note-title">按条购买</span>
+                    <strong>适合零散补货</strong>
+                    <span class="note-desc">买几条发几条，库存实时同步。</span>
+                </div>
+                <div class="hero-note-card">
+                    <span class="note-title">按组购买</span>
+                    <strong>适合整组交付</strong>
+                    <span class="note-desc">每组约 47 到 50 条，整组原样发货。</span>
+                </div>
+                <div class="hero-note-card">
+                    <span class="note-title">自助提取</span>
+                    <strong>支付后回本站提取</strong>
+                    <span class="note-desc">联系方式 + 提取密码即可领取内容。</span>
+                </div>
+                <div class="hero-note-card">
+                    <span class="note-title">库存同步</span>
+                    <strong>页面实时刷新</strong>
+                    <span class="note-desc">补货后前台库存会自动更新显示。</span>
+                </div>
+            </div>
+        </div>
+
+        <aside class="hero-contact-card">
+            <h3>快速入口</h3>
+            <p class="contact-meta">直接进入购买或自助提取</p>
+            <div class="panel-badges">
+                <span>企业邮箱</span>
+                <span>企业邮箱</span>
+                <span>企业邮箱</span>
+            </div>
+            <div class="landing-actions">
+                <a class="button" href="{% url 'home' %}">返回首页</a>
+            </div>
+        </aside>
+    </section>
+
+    <section class="entry-dual-grid">
+        <article class="product-panel buy-panel">
+            <div class="panel-head">
+                <div>
+                    <p class="panel-tag">按条售卖</p>
+                    <h2>{{ line_package.name|default:"按条购买" }}</h2>
+                </div>
+                <div class="price">¥{{ line_package.price|default:"0.40" }}</div>
+            </div>
+            <p class="panel-desc">企业邮箱支持按条购买，适合零散补货和小批量使用场景。</p>
+            <div class="stat-row">
+                <span>剩余 {{ line_package.available_unit_count|default:"0" }} 条</span>
+                <span>库存实时同步</span>
+            </div>
+            {% if line_package %}
+                <a class="button" href="{% url 'package_detail' line_package.pk %}">进入按条购买</a>
+            {% endif %}
+        </article>
+
+        <article class="product-panel buy-panel">
+            <div class="panel-head">
+                <div>
+                    <p class="panel-tag">按组售卖</p>
+                    <h2>{{ group_package.name|default:"按组购买" }}</h2>
+                </div>
+                <div class="price">¥{{ group_package.price|default:"30.00" }}</div>
+            </div>
+            <p class="panel-desc">企业邮箱支持按组购买，整组原样交付，适合需要管理员权限的整组使用场景。</p>
+            <div class="stat-row">
+                <span>剩余 {{ group_package.available_unit_count|default:"0" }} 组</span>
+                <span>每组约 47 到 50 条</span>
+            </div>
+            {% if group_package %}
+                <a class="button" href="{% url 'package_detail' group_package.pk %}">进入按组购买</a>
+            {% endif %}
+        </article>
+    </section>
+</section>
+{% endblock %}

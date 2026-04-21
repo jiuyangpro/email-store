@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}企业邮箱商城{% endblock %}
+{% block nav_agent_apply_link %}{% endblock %}
+
+{% block content %}
+<section class="compact-home">
+    <section class="hero-overview">
+        <div class="hero-main-card">
+            <div class="hero-badge-row">
+                <span class="panel-tag">在线购买</span>
+                <span class="hero-status-pill">支付后自动发货</span>
+            </div>
+            <div class="hero-headline-row">
+                <div>
+                    <h1>企业邮箱购买页</h1>
+                    <p class="muted">付款、发货、提取都由平台统一自动处理，页面价格以下单时显示为准。</p>
+                </div>
+            </div>
+            <div class="hero-note-grid">
+                <div class="hero-note-card">
+                    <span>按条购买</span>
+                    <strong>支持多条下单</strong>
+                </div>
+                <div class="hero-note-card">
+                    <span>按组购买</span>
+                    <strong>享有管理员权限</strong>
+                </div>
+                <div class="hero-note-card">
+                    <span>售后处理</span>
+                    <strong>平台统一处理</strong>
+                </div>
+            </div>
+            {% if agent.contact_qq or agent.contact_wechat %}
+                <div class="compact-note-list detail-note-list">
+                    {% if agent.contact_qq %}<div>QQ：{{ agent.contact_qq }}</div>{% endif %}
+                    {% if agent.contact_wechat %}<div>微信：{{ agent.contact_wechat }}</div>{% endif %}
+                </div>
+            {% endif %}
+            {% if agent.contact_image_1 or agent.contact_image_2 %}
+                <div class="contact-qr-grid">
+                    {% if agent.contact_image_1 %}
+                        <div class="support-mini-card qr-mini-card">
+                            <h3>联系方式图片 1</h3>
+                            <div class="qr-card small">
+                                <img class="qr-image" src="{{ agent.contact_image_1.url }}" alt="代理联系方式图片1">
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if agent.contact_image_2 %}
+                        <div class="support-mini-card qr-mini-card">
+                            <h3>联系方式图片 2</h3>
+                            <div class="qr-card small">
+                                <img class="qr-image" src="{{ agent.contact_image_2.url }}" alt="代理联系方式图片2">
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+            <div class="detail-info-grid">
+                <section class="card info-subcard">
+                    <div class="section-title-row">
+                        <div>
+                            <p class="panel-tag">购买说明</p>
+                            <h3>使用与交付规则</h3>
+                        </div>
+                    </div>
+                    <div class="feature-list feature-list-single">
+                        <div class="feature-item">
+                            <strong>自动发货说明</strong>
+                            <span>付款成功后由平台自动发货，提取仍然走平台订单页，不需要人工发货。</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>售后保障</strong>
+                            <span>订单售后由平台统一处理，支付成功后回订单页提取。</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>按组权限说明</strong>
+                            <span>按组购买享有管理员权限，一组约 47 到 50 条，整组原样发货。</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card info-subcard">
+                    <div class="section-title-row">
+                        <div>
+                            <p class="panel-tag">下单提醒</p>
+                            <h3>购买前请先确认</h3>
+                        </div>
+                    </div>
+                    <div class="compact-note-list detail-note-list">
+                        <div>支付成功后自动发货，回订单页即可提取</div>
+                        <div>按条购买适合零散购买，买几条发几条</div>
+                        <div>按组购买享有管理员权限，一组约 47 到 50 条</div>
+                        <div>订单售后由平台统一处理，支付成功后回订单页提取</div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </section>
+
+    <section class="entry-dual-grid">
+        {% if line_package and line_price %}
+            <article class="product-panel buy-panel">
+                <div class="panel-head panel-head-vertical">
+                    <div class="panel-title-wrap">
+                        <p class="panel-tag">按条售卖</p>
+                        <h2>{{ line_package.name }}</h2>
+                        <p class="panel-desc">当前售价：¥{{ line_price.sale_price }} / 条</p>
+                    </div>
+                    <div class="price-badge">
+                        <span>售价</span>
+                        <strong>¥{{ line_price.sale_price }}</strong>
+                    </div>
+                </div>
+                <div class="stat-row stat-row-strong">
+                    <span>剩余 {{ line_package.available_unit_count }} 条</span>
+                    <span>支付后自动发货</span>
+                </div>
+                <a class="button" href="{% url 'agent_package_detail' agent.code line_package.pk %}">进入按条购买</a>
+            </article>
+        {% endif %}
+
+        {% if group_package and group_price %}
+            <article class="product-panel buy-panel">
+                <div class="panel-head panel-head-vertical">
+                    <div class="panel-title-wrap">
+                        <p class="panel-tag">按组售卖</p>
+                        <h2>{{ group_package.name }}</h2>
+                        <p class="panel-desc">当前售价：¥{{ group_price.sale_price }} / 组</p>
+                    </div>
+                    <div class="price-badge">
+                        <span>售价</span>
+                        <strong>¥{{ group_price.sale_price }}</strong>
+                    </div>
+                </div>
+                <div class="stat-row stat-row-strong">
+                    <span>剩余 {{ group_package.available_unit_count }} 组</span>
+                    <span>支付后自动发货</span>
+                </div>
+                <a class="button" href="{% url 'agent_package_detail' agent.code group_package.pk %}">进入按组购买</a>
+            </article>
+        {% endif %}
+    </section>
+</section>
+{% endblock %}
