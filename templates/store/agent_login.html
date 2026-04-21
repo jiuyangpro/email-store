@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}代理登录 - 企业邮箱商城{% endblock %}
+{% block meta_robots %}noindex,nofollow,noarchive{% endblock %}
+
+{% block content %}
+<section class="card order-card">
+    <h1>代理后台登录</h1>
+    <p class="muted">注册成功后可直接登录。登录后可查看自己的专属链接、修改售价、查看订单和利润统计。</p>
+    <form method="post" class="order-form">
+        {% csrf_token %}
+        <label for="phone">手机号</label>
+        <input id="phone" name="phone" type="text" placeholder="输入申请代理时填写的手机号" required>
+
+        <label for="password">密码</label>
+        <input id="password" name="password" type="password" placeholder="输入你的代理后台密码" required>
+
+        <button class="button" type="submit">登录代理后台</button>
+    </form>
+    <div class="actions">
+        <a class="button secondary" href="{% url 'agent_apply' %}">还没有账号，去申请</a>
+        <a class="button secondary" href="{% url 'agent_password_reset' %}">忘记密码，邮箱找回</a>
+    </div>
+    <div class="compact-note-list detail-note-list">
+        <div>登录账号：注册时填写的手机号</div>
+        <div>登录密码：注册时设置的代理后台密码</div>
+        <div>注册成功后会自动生成专属推广链接，可直接开始推广</div>
+        <div>忘记密码时，可直接用绑定邮箱接收验证码，自助重置密码</div>
+        <div>如果验证码没进收件箱，请顺手检查一下垃圾邮箱</div>
+    </div>
+</section>
+{% endblock %}

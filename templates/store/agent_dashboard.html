@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}代理后台 - 企业邮箱商城{% endblock %}
+{% block meta_robots %}noindex,nofollow,noarchive{% endblock %}
+{% block nav_agent_apply_link %}{% endblock %}
+
+{% block content %}
+<section class="compact-home">
+    {% if email_binding_required %}
+    <section class="card order-card">
+        <div class="section-title-row">
+            <div>
+                <p class="panel-tag">邮箱绑定提醒</p>
+                <h2>请先绑定邮箱</h2>
+            </div>
+        </div>
+        <p class="muted">你已经注册成功，但还没绑定邮箱。为了以后找回密码、修改密码和接收重要提醒，请先完成邮箱绑定。</p>
+        <p class="muted">发送验证码后，如果收件箱没看到邮件，请顺手检查一下垃圾邮箱。</p>
+        <form method="post" action="{% url 'agent_bind_email' %}" class="order-form">
+            {% csrf_token %}
+            <label for="bind_email">绑定邮箱</label>
+            <input id="bind_email" name="email" type="email" placeholder="请输入常用邮箱" required>
+
+            <label for="bind_email_code">邮箱验证码</label>
+            <div class="inline-field-row">
+                <input id="bind_email_code" name="email_code" type="text" inputmode="numeric" placeholder="输入邮箱验证码" required>
+                <button
+                    class="button secondary send-email-code-btn"
+                    type="button"
+                    data-purpose="bind"
+                    data-email-field="bind_email"
+                    data-status-id="agent-bind-email-status"
+                    data-send-url="{% url 'agent_send_email_code' %}"
+                >发送验证码</button>
+            </div>
+            <p id="agent-bind-email-status" class="muted"></p>
+            <p class="muted">如果收件箱没看到验证码，请顺手检查一下垃圾邮箱。</p>
+
+            <button class="button" type="submit">立即绑定邮箱</button>
+        </form>
+    </section>
+    {% endif %}
+
+    <section class="card order-card">
+        <div class="section-title-row">
+            <div>
+                <p class="panel-tag">欢迎使用</p>
+                <h2>欢迎你加入代理体系</h2>
+            </div>
+        </div>
+        <div class="meta-list">
+            <div>专属推广链接：{{ agent_public_url }}</div>
+            <div>代理后台请一直从官网登录：<a href="{{ agent_login_url }}">{{ agent_login_url }}</a></div>
+            <div>登录账号：{{ agent.phone }}</div>
+            <div>登录密码：注册时设置的密码</div>
+            <div>你现在已经开通，可直接修改售价并开始推广。</div>
+        </div>
+    </section>
+
+    <section class="entry-dual-grid">
+        <article class="product-panel buy-panel">
+            <div class="panel-head panel-head-vertical">
+                <div class="panel-title-wrap">
+                    <p class="panel-tag">我的专属链接</p>
+                    <h2>{{ agent.nickname }}</h2>
+                    <p class="panel-desc">{{ agent_public_url }}</p>
+                </div>
+                <div class="price-badge">
+                    <span>状态</span>
+                    <strong>{{ agent.get_status_display }}</strong>
+                </div>
+            </div>
+            <div class="compact-note-list detail-note-list">
+                <div>手机号：{{ agent.phone }}</div>
+                <div>绑定邮箱：{{ agent.email|default:"未绑定" }}</div>
+                <div>邮箱状态：{% if agent.email_verified %}已验证{% else %}未验证{% endif %}</div>
+                <div>公开 QQ：{{ agent.contact_qq|default:"未填写" }}</div>
+                <div>公开微信：{{ agent.contact_wechat|default:"未填写" }}</div>
+                <div>结算微信：{{ agent.wechat_id|default:"未填写" }}</div>
+                <div>支付宝：{{ agent.alipay_account|default:"未填写" }}</div>
+                <div>收款姓名：{{ agent.payee_name|default:"未填写" }}</div>
+            </div>
+        </article>
+
+        <article class="product-panel buy-panel">
+            <div class="panel-head panel-head-vertical">
+                <div class="panel-title-wrap">
+                    <p class="panel-tag">销售汇总</p>
+                    <h2>我的数据</h2>
+                    <p class="panel-desc">这里只显示你的订单和利润，不显示库存内容。</p>
+                </div>
+            </div>
+            <div class="compact-note-list detail-note-list">
+                <div>总订单：{{ summary.total_orders }}</div>
+                <div>总销售额：¥{{ summary.total_sales_amount }}</div>
+                <div>总利润：¥{{ summary.total_profit }}</div>
+                <div>待结算：¥{{ summary.unsettled_profit }}</div>
+                <div>已结算：¥{{ summary.settled_profit }}</div>
+            </div>
+        </article>
+    </section>
+
+    <section class="card order-card">
+        <div class="section-title-row">
+            <div>
+                <p class="panel-tag">佣金说明</p>
+                <h2>你的佣金怎么算</h2>
+            </div>
+        </div>
+        <div class="meta-list">
+            <div>你自己加价卖出去的部分，全部算你的佣金。</div>
+            <div>平台设定的最低金额只是底价，本身不参与提成。</div>
+            <div>不管你加价多少，只要成功卖出去，加价部分都归你。</div>
+            <div>结算说明：代理佣金默认每周统一结算一次。</div>
+        </div>
+    </section>
+
+    <section class="card order-card">
+        <div class="section-title-row">
+            <div>
+                <p class="panel-tag">公开联系方式</p>
+                <h2>客户在你的卖货页会看到这些</h2>
+            </div>
+        </div>
+        <form method="post" action="{% url 'agent_update_profile' %}" class="order-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="nickname">代理昵称</label>
+            <input id="nickname" name="nickname" type="text" value="{{ agent.nickname }}" required>
+
+            <label for="contact_qq">公开 QQ</label>
+            <input id="contact_qq" name="contact_qq" type="text" value="{{ agent.contact_qq }}" placeholder="显示在专属卖货页">
+
+            <label for="contact_wechat">公开微信号</label>
+            <input id="contact_wechat" name="contact_wechat" type="text" value="{{ agent.contact_wechat }}" placeholder="显示在专属卖货页">
+
+            <label for="wechat_id">结算微信号</label>
+            <input id="wechat_id" name="wechat_id" type="text" value="{{ agent.wechat_id }}" placeholder="仅平台结算用，不给客户看">
+
+            <label for="alipay_account">支付宝账号</label>
+            <input id="alipay_account" name="alipay_account" type="text" value="{{ agent.alipay_account }}" placeholder="仅平台结算用，不给客户看">
+
+            <label for="payee_name">收款姓名</label>
+            <input id="payee_name" name="payee_name" type="text" value="{{ agent.payee_name }}" required>
+
+            <label for="contact_image_1">联系方式图片 1</label>
+            <input id="contact_image_1" name="contact_image_1" type="file" accept="image/png,image/jpeg,image/webp" data-duplicate-guard="true" data-existing-hashes='{{ agent_contact_image_hashes_json|escapejs }}' data-allow-field="allow_duplicate_contact_image_1">
+            <input type="hidden" name="allow_duplicate_contact_image_1" value="0">
+            <p class="muted">上传后会自动识别尺寸并压缩，建议放你的微信二维码或联系海报。</p>
+            {% if agent.contact_image_1 %}
+                <div class="qr-card small">
+                    <img class="qr-image" src="{{ agent.contact_image_1.url }}" alt="联系方式图片1">
+                </div>
+                <label><input type="checkbox" name="clear_contact_image_1" value="1"> 清空图片 1</label>
+            {% endif %}
+
+            <label for="contact_image_2">联系方式图片 2</label>
+            <input id="contact_image_2" name="contact_image_2" type="file" accept="image/png,image/jpeg,image/webp" data-duplicate-guard="true" data-existing-hashes='{{ agent_contact_image_hashes_json|escapejs }}' data-allow-field="allow_duplicate_contact_image_2">
+            <input type="hidden" name="allow_duplicate_contact_image_2" value="0">
+            <p class="muted">可继续放第二张联系图，不上传就保持现状。</p>
+            {% if agent.contact_image_2 %}
+                <div class="qr-card small">
+                    <img class="qr-image" src="{{ agent.contact_image_2.url }}" alt="联系方式图片2">
+                </div>
+                <label><input type="checkbox" name="clear_contact_image_2" value="1"> 清空图片 2</label>
+            {% endif %}
+
+            <button class="button" type="submit">保存联系方式</button>
+        </form>
+    </section>
+
+    <section class="card order-card">
+        <div class="section-title-row">
+            <div>
+                <p class="panel-tag">代理售价</p>
+                <h2>只允许改自己的售价</h2>
+            </div>
+        </div>
+        <form method="post" action="{% url 'agent_update_prices' %}" class="order-form">
+            {% csrf_token %}
+            {% for price_config in price_configs %}
+                <label for="sale_price_{{ price_config.package_id }}">{{ price_config.package.name }}</label>
+                <input
+                    id="sale_price_{{ price_config.package_id }}"
+                    name="sale_price_{{ price_config.package_id }}"
+                    type="number"
+                    step="0.01"
+                    min="{{ price_config.package.agent_floor_price }}"
+                    value="{{ price_config.sale_price }}"
+                    required
+                >
+                <p class="muted">底价：¥{{ price_config.package.agent_floor_price }}，只能加价，不能低于底价。</p>
+            {% endfor %}
+            <button class="button" type="submit">保存我的售价</button>
+        </form>
+    </section>
+
+    <section class="card order-card">
+        <div class="section-title-row">
+            <div>
+                <p class="panel-tag">登录密码</p>
+                <h2>修改代理后台密码</h2>
+            </div>
+        </div>
+        <form method="post" action="{% url 'agent_update_password' %}" class="order-form">
+            {% csrf_token %}
+            <label for="current_password">当前密码</label>
+            <input id="current_password" name="current_password" type="password" required>
+
+            <label for="new_password">新密码</label>
+            <input id="new_password" name="new_password" type="password" minlength="6" required>
+
+            <label for="confirm_password">确认新密码</label>
+            <input id="confirm_password" name="confirm_password" type="password" minlength="6" required>
+
+            <p class="muted">
+                {% if agent.email_verified and agent.email %}
+                    当前已绑定邮箱：{{ agent.email }}。忘记密码时，可直接通过邮箱验证码找回。
+                {% else %}
+                    当前还没绑定邮箱，请先完成邮箱绑定，后续就可以自己找回密码。
+                {% endif %}
+            </p>
+            <button class="button" type="submit">修改登录密码</button>
+        </form>
+    </section>
+
+    <section class="card order-card">
+        <div class="section-title-row">
+            <div>
+                <p class="panel-tag">最近订单</p>
+                <h2>我的销售明细</h2>
+            </div>
+        </div>
+        <div class="meta-list">
+            {% for order in recent_orders %}
+                <div>
+                    <strong>{{ order.order_no }}</strong>
+                    {{ order.package.name }} /
+                    成交 ¥{{ order.agent_sale_price_snapshot }} /
+                    利润 ¥{{ order.agent_profit_snapshot }} /
+                    {{ order.get_agent_settlement_status_display }}
+                </div>
+            {% empty %}
+                <div>当前还没有成交订单。</div>
+            {% endfor %}
+        </div>
+        <div class="actions">
+            <a class="button secondary" href="{% url 'agent_logout' %}">退出登录</a>
+        </div>
+    </section>
+</section>
+<script src="{% static 'store/contact-image-duplicate-guard.js' %}"></script>
+<script src="{% static 'store/email-code-helper.js' %}"></script>
+{% endblock %}

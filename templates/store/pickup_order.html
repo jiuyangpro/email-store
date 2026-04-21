@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}提取内容 - {{ order.order_no }}{% endblock %}
+{% block meta_robots %}noindex,nofollow,noarchive{% endblock %}
+{% block nav_agent_apply_link %}{% if not order.agent_id %}<a href="{% url 'agent_apply' %}">代理合作</a>{% endif %}{% endblock %}
+
+{% block content %}
+<section class="card order-card">
+    <h1>提取内容</h1>
+    <div class="meta-list">
+        <div><strong>订单号：</strong>{{ order.order_no }}</div>
+        <div><strong>联系方式：</strong>{{ order.buyer_contact }}</div>
+        <div><strong>订单状态：</strong>{{ order.get_status_display }}</div>
+        <div><strong>购买数量：</strong>{{ order.quantity }} {{ unit_label }}</div>
+        {% if pickup_expire_at %}
+            <div><strong>提取截止：</strong>{{ pickup_expire_at|date:"Y-m-d H:i" }}</div>
+        {% endif %}
+    </div>
+
+    {% if expired %}
+        <div class="notice-box">这个订单的提取记录已经超过 7 天。</div>
+    {% elif not unlocked %}
+        <form method="post" class="order-form">
+            {% csrf_token %}
+            <label for="pickup_password">提取密码</label>
+            <input id="pickup_password" name="pickup_password" type="password" placeholder="输入你下单前设置的提取密码" required>
+            <button class="button" type="submit">立即提取</button>
+        </form>
+    {% else %}
+        <div class="actions">
+            <button class="button" type="button" onclick="copyText('copy-all-text', this)">
+                {% if order.package.stock_mode == "group" %}复制全部（带说明）{% else %}复制全部（带说明）{% endif %}
+            </button>
+            <a class="button secondary" href="{% url 'order_detail' order.pk %}">返回订单页</a>
+        </div>
+        <textarea id="copy-all-text" hidden>{{ delivery_copy_text }}</textarea>
+        <div class="delivery-list">
+            {% for item in delivered_items %}
+                <div class="delivery-card">
+                    {% if item.label %}
+                        <div class="delivery-title">{{ item.label }}</div>
+                    {% endif %}
+                    <pre class="delivery-item" id="delivery-{{ item.item.pk }}">{{ item.item.content }}</pre>
+                    <textarea id="copy-item-{{ item.item.pk }}" hidden>{{ item.copy_text }}</textarea>
+                    <button class="button secondary" type="button" onclick="copyText('copy-item-{{ item.item.pk }}', this)">复制这一条（带说明）</button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</section>
+
+<script>
+async function copyText(id, button) {
+    const target = document.getElementById(id);
+    if (!target) return;
+    const text = "value" in target ? target.value : target.innerText;
+    try {
+        await navigator.clipboard.writeText(text);
+        if (button) {
+            const originalText = button.textContent;
+            button.textContent = "已复制";
+            setTimeout(() => {
+                button.textContent = originalText;
+            }, 1600);
+        }
+    } catch (error) {
+        window.prompt("请手动复制下面内容：", text);
+    }
+}
+</script>
+{% endblock %}

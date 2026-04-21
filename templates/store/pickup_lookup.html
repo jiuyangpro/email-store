@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}自助提取 - 企业邮箱商城{% endblock %}
+{% block meta_robots %}noindex,nofollow,noarchive{% endblock %}
+{% block content %}
+<section class="card pickup-shell">
+    <h1>自助提取</h1>
+    <p class="muted">支付成功后，如果第三方页面没有自动跳回，直接在这里输入联系方式和提取密码即可领取。</p>
+
+    <form method="post" class="order-form">
+        {% csrf_token %}
+        <label for="buyer_contact">联系方式</label>
+        <input id="buyer_contact" name="buyer_contact" type="text" placeholder="下单时填写的 QQ / 微信 / 手机号" required>
+
+        <label for="pickup_password">提取密码</label>
+        <input id="pickup_password" name="pickup_password" type="password" placeholder="下单前设置的提取密码" required>
+
+        <button class="button" type="submit">查询并提取</button>
+    </form>
+
+    {% if unlocked %}
+        <div class="lookup-results">
+            {% for row in matched_orders %}
+                <div class="lookup-card">
+                    <div class="meta-list compact">
+                        <div><strong>订单号：</strong>{{ row.order.order_no }}</div>
+                        <div><strong>商品：</strong>{{ row.order.package.name }}</div>
+                        <div><strong>提取截止：</strong>{{ row.expire_at|date:"Y-m-d H:i" }}</div>
+                    </div>
+                    <div class="actions">
+                        <button class="button" type="button" onclick="copyText('lookup-all-{{ row.order.pk }}', this)">复制全部（带说明）</button>
+                    </div>
+                    <textarea id="lookup-all-{{ row.order.pk }}" hidden>{{ row.delivery_copy_text }}</textarea>
+                    <div class="delivery-list">
+                        {% for item in row.items %}
+                            <div class="delivery-card">
+                                {% if item.label %}
+                                    <div class="delivery-title">{{ item.label }}</div>
+                                {% endif %}
+                                <pre class="delivery-item" id="lookup-{{ item.item.pk }}">{{ item.item.content }}</pre>
+                                <textarea id="lookup-copy-{{ item.item.pk }}" hidden>{{ item.copy_text }}</textarea>
+                                <button class="button secondary" type="button" onclick="copyText('lookup-copy-{{ item.item.pk }}', this)">复制这一条（带说明）</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</section>
+
+<script>
+async function copyText(id, button) {
+    const target = document.getElementById(id);
+    if (!target) return;
+    const text = "value" in target ? target.value : target.innerText;
+    try {
+        await navigator.clipboard.writeText(text);
+        if (button) {
+            const originalText = button.textContent;
+            button.textContent = "已复制";
+            setTimeout(() => {
+                button.textContent = originalText;
+            }, 1600);
+        }
+    } catch (error) {
+        window.prompt("请手动复制下面内容：", text);
+    }
+}
+</script>
+{% endblock %}

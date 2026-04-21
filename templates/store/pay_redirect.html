@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}正在跳转支付 - 企业邮箱商城{% endblock %}
+{% block meta_robots %}noindex,nofollow,noarchive{% endblock %}
+{% block nav_agent_apply_link %}{% if not order.agent_id %}<a href="{% url 'agent_apply' %}">代理合作</a>{% endif %}{% endblock %}
+
+{% block content %}
+<section class="card order-card">
+    <h1>正在跳转收银台</h1>
+    <p>如果页面没有自动跳转，点下面这个按钮。</p>
+
+    <form id="pay-form" method="post" action="{{ gateway }}">
+        {% for key, value in payment_data.items %}
+            <input type="hidden" name="{{ key }}" value="{{ value }}">
+        {% endfor %}
+        <button class="button" type="submit">继续前往支付</button>
+    </form>
+</section>
+
+<script>
+    document.getElementById("pay-form").submit();
+</script>
+{% endblock %}

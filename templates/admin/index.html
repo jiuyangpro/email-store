@@ -1,0 +1,90 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <div class="dashboard-hero">
+        <h1>运营后台</h1>
+        <p>这里只保留卖货常用入口，少点错，少绕路。</p>
+        <div class="dashboard-notice">{{ package_guard_notice }}</div>
+    </div>
+
+    <div class="mobile-install-card">
+        <h2>iPhone 安装</h2>
+        <p>这个后台已经支持做成手机桌面图标，你自己装一次，后面就和打开 App 一样。</p>
+        <p class="mobile-install-step"><strong>第 1 步：</strong>用 iPhone 的 Safari 打开这个后台登录页。</p>
+        <p class="mobile-install-step"><strong>第 2 步：</strong>点底部分享按钮，再点“添加到主屏幕”。</p>
+        <p class="mobile-install-step"><strong>第 3 步：</strong>桌面会出现“运营后台”图标，以后直接点图标进入。</p>
+        <p class="mobile-install-tip"><strong>建议：</strong>只在你自己的 iPhone 上安装，并给手机开锁屏密码或面容解锁。</p>
+    </div>
+
+    <div class="dashboard-summary-grid">
+        <div class="summary-card">
+            <span class="summary-label">今日销售额</span>
+            <strong class="summary-value">{{ sales_summary.today_sales_amount }}</strong>
+            <p>按今日已支付订单统计</p>
+        </div>
+        <div class="summary-card">
+            <span class="summary-label">今日已支付单数</span>
+            <strong class="summary-value">{{ sales_summary.today_paid_order_count }}</strong>
+            <p>包含正常发货和待处理订单</p>
+        </div>
+        <div class="summary-card">
+            <span class="summary-label">今日卖出数量</span>
+            <strong class="summary-value">{{ sales_summary.today_total_quantity }}</strong>
+            <p>按订单购买数量累计</p>
+        </div>
+    </div>
+
+    <div class="dashboard-review-strip">
+        <div class="review-card">
+            <div>
+                <span class="review-label">代理审核</span>
+                <strong class="review-value">待审核 {{ agent_review_summary.pending_count }} 个</strong>
+                <p>新代理提交申请后，先在这里审核通过，再让对方登录代理后台。</p>
+            </div>
+            <div class="review-actions">
+                <a class="button-link primary-link" href="{{ agent_review_summary.pending_url }}">立即审核</a>
+                <a class="button-link" href="{{ agent_review_summary.all_url }}">查看全部代理</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <a class="dashboard-card" href="{{ agent_review_summary.pending_url }}">
+            <h2>代理审核</h2>
+            <p>待审核 {{ agent_review_summary.pending_count }} 个。点进去直接审批、开通或禁用代理。</p>
+        </a>
+
+        <a class="dashboard-card" href="{{ package_entry_summary.line_url }}">
+            <h2>按条购买</h2>
+            <p>单独看按条商品，数量 {{ package_entry_summary.line_count }} 个，进去就是按条筛选结果。</p>
+        </a>
+
+        <a class="dashboard-card" href="{{ package_entry_summary.group_url }}">
+            <h2>按组购买</h2>
+            <p>单独看按组商品，数量 {{ package_entry_summary.group_count }} 个，不再和按条商品混在一起。</p>
+        </a>
+
+        <a class="dashboard-card" href="{{ package_entry_summary.all_url }}">
+            <h2>全部商品</h2>
+            <p>需要一起查看时再进这里，统一看所有库存发货商品。</p>
+        </a>
+
+        <a class="dashboard-card" href="/admin/store/stockitem/">
+            <h2>库存查看</h2>
+            <p>看剩余库存、已售库存、订单占用情况。</p>
+        </a>
+
+        <a class="dashboard-card" href="/admin/store/order/">
+            <h2>订单管理</h2>
+            <p>查看支付状态、提取信息和发货记录。</p>
+        </a>
+
+        <a class="dashboard-card" href="/admin/store/mailgatewaysyncconfig/">
+            <h2>邮局同步开关</h2>
+            <p>控制上传库存后，是否自动同步到邮局白名单。</p>
+        </a>
+
+    </div>
+</div>
+{% endblock %}

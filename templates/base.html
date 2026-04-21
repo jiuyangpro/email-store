@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}企业邮箱购买_企业邮箱账号出售_企业邮箱商城{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}企业邮箱商城提供企业邮箱账号，支持按条购买、按组购买，库存实时同步，支付成功后自助提取。{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}企业邮箱,企业邮箱购买,企业邮箱账号,企业邮箱出售,企业邮箱商城,按条购买,按组购买{% endblock %}">
+    <meta name="robots" content="{% block meta_robots %}index,follow,max-image-preview:large{% endblock %}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="企业邮箱商城">
+    <meta property="og:title" content="{% block og_title %}企业邮箱购买_企业邮箱账号出售_企业邮箱商城{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}企业邮箱商城提供企业邮箱账号，支持按条购买、按组购买，库存实时同步，支付成功后自助提取。{% endblock %}">
+    <meta property="og:url" content="{% block canonical_url %}{{ request.build_absolute_uri|default:'' }}{% endblock %}">
+    <link rel="canonical" href="{% block canonical_link %}{{ request.build_absolute_uri|default:'' }}{% endblock %}">
+    {% block extra_meta %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'site.css' %}?v=20260417-ui16">
+    {% block structured_data %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <div class="page-shell">
+    <header class="site-header">
+        <div class="container site-header-inner">
+            <a class="brand-mark" href="{{ site_home_url|default:'/' }}">
+                <span class="brand-badge">Enterprise</span>
+                <div>
+                    <strong>企业邮箱商城</strong>
+                    <span>企业邮箱购买 · 支付 · 自助提取</span>
+                </div>
+            </a>
+            <nav class="site-nav">
+                <a href="{{ site_home_url|default:'/' }}">首页</a>
+                <a href="{% url 'pickup_lookup' %}">自助提取</a>
+                {% block nav_agent_apply_link %}
+                    <a href="{% url 'agent_apply' %}">代理合作</a>
+                {% endblock %}
+            </nav>
+        </div>
+    </header>
+    <main class="container page-main">
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="site-footer">
+        <div class="container site-footer-inner">
+            <div>
+                <strong>企业邮箱商城</strong>
+                <p>当前网站即为购买、支付、提取的一体化入口。</p>
+            </div>
+            <a class="button secondary footer-button" href="{% url 'pickup_lookup' %}">打开自助提取</a>
+        </div>
+    </footer>
+    </div>
+</body>
+</html>

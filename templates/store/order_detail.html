@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}订单 {{ order.order_no }} - 企业邮箱商城{% endblock %}
+{% block meta_robots %}noindex,nofollow,noarchive{% endblock %}
+{% block nav_agent_apply_link %}{% if not order.agent_id %}<a href="{% url 'agent_apply' %}">代理合作</a>{% endif %}{% endblock %}
+
+{% block content %}
+<section class="card order-card">
+    <h1>订单已创建</h1>
+    <p>订单已生成，支付成功后可自动发货并回订单页提取内容。</p>
+
+    <div class="meta-list">
+        <div><strong>订单号：</strong>{{ order.order_no }}</div>
+        <div><strong>套餐：</strong>{{ order.package.name }}</div>
+        <div><strong>购买数量：</strong>{{ order.quantity }} {{ unit_label }}</div>
+        {% if order.package.delivery_mode == "stock" %}
+            <div><strong>预计发货：</strong>{{ order.delivery_count }} {{ unit_label }}</div>
+        {% endif %}
+        <div><strong>金额：</strong>¥{{ order.amount }}</div>
+        <div><strong>状态：</strong>{{ order.get_status_display }}</div>
+        <div><strong>购买人：</strong>{{ order.buyer_name|default:"未填写" }}</div>
+        <div><strong>联系方式：</strong>{{ order.buyer_contact }}</div>
+    </div>
+
+    {% if order.status == "pending" %}
+        {% if payment_ready %}
+            <div class="actions">
+                <form method="post" action="{% url 'start_payment' order.pk %}">
+                    {% csrf_token %}
+                    <button class="button" type="submit">立即支付</button>
+                </form>
+                <a class="button secondary" href="{{ back_to_package_url }}">返回套餐页</a>
+            </div>
+        {% else %}
+            <div class="notice-box">
+                当前暂时无法发起支付，请稍后再试。
+            </div>
+            <div class="actions">
+                <a class="button" href="{{ back_to_home_url }}">返回首页</a>
+                <a class="button secondary" href="{{ back_to_package_url }}">返回套餐页</a>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="notice-box success-box">
+            这个订单已经支付完成。你可以在 7 天内通过提取密码领取内容。
+        </div>
+        <div class="actions">
+            <a class="button" href="{% url 'pickup_order' order.pk %}">去提取</a>
+            <a class="button" href="{{ back_to_home_url }}">返回首页</a>
+            <a class="button secondary" href="{{ back_to_package_url }}">返回套餐页</a>
+        </div>
+        {% if pickup_expire_at %}
+            <p class="muted">提取有效期到：{{ pickup_expire_at|date:"Y-m-d H:i" }}</p>
+        {% endif %}
+    {% endif %}
+</section>
+{% endblock %}
