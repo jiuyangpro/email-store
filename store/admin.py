@@ -524,6 +524,7 @@ class PackageAdmin(admin.ModelAdmin):
         "original_price",
         "stock_mode",
         "is_active",
+        "twofa_status",
         "bulk_import_text",
         "bulk_import_text_file",
         "bulk_import_groups",
