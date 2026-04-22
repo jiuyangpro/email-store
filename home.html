@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}企业邮箱购买_企业邮箱账号出售_企业邮箱商城{% endblock %}
+{% block og_title %}企业邮箱购买_企业邮箱账号出售_企业邮箱商城{% endblock %}
+{% block meta_description %}企业邮箱商城提供企业邮箱账号，支持按条购买与按组购买，库存实时同步，支付成功后自助提取。{% endblock %}
+{% block og_description %}企业邮箱商城提供企业邮箱账号，支持按条购买与按组购买，库存实时同步，支付成功后自助提取。{% endblock %}
+{% block meta_keywords %}企业邮箱,企业邮箱购买,企业邮箱账号,企业邮箱出售,按条购买,按组购买{% endblock %}
+{% block canonical_link %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}
+{% block canonical_url %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}
+{% block body_class %}home-landing{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "企业邮箱支持按条购买还是按组购买？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "企业邮箱商城支持按条购买和按组购买，按条适合零散补货，按组适合整组原样发货。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "企业邮箱购买后如何提取？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "支付成功后，使用下单时填写的联系方式和提取密码，即可回本站自助提取企业邮箱内容。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "企业邮箱库存是否实时同步？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "网站页面展示的按条和按组库存为实时同步，导入后会自动刷新显示剩余条数和组数。"
+      }
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="single-screen-shell compact-home">
+    <section class="hero-overview">
+        <div class="hero-main-card">
+            <div class="hero-headline-row">
+                <div>
+                    <p class="eyebrow">安全自助提取</p>
+                    <h1>企业邮箱商城</h1>
+                </div>
+                <span class="hero-status-pill">实时库存同步</span>
+            </div>
+
+            <div class="hero-metric-row">
+                <div class="hero-metric-card">
+                    <span>按条库存</span>
+                    <strong id="line-stock-summary">{{ line_package.available_unit_count|default:"0" }} 条</strong>
+                </div>
+                <div class="hero-metric-card">
+                    <span>按组库存</span>
+                    <strong id="group-stock-summary">{{ group_package.available_unit_count|default:"0" }} 组</strong>
+                </div>
+                <div class="hero-metric-card">
+                    <span>自助提取</span>
+                    <strong>7 x 24</strong>
+                </div>
+            </div>
+
+            <div class="hero-note-grid">
+                <div class="hero-note-card">
+                    <span class="note-title">自动发货</span>
+                    <strong>支付成功后自动发货</strong>
+                    <span class="note-desc">无需人工催发，回订单页即可提取</span>
+                </div>
+                <div class="hero-note-card">
+                    <span class="note-title">售后保障</span>
+                    <strong>所有邮箱质保三个月</strong>
+                    <span class="note-desc">按组购买享有管理员权限，一组约 47 到 50 条</span>
+                </div>
+                <div class="hero-note-card">
+                    <span class="note-title">自助提取</span>
+                    <strong>联系方式 + 提取密码</strong>
+                    <span class="note-desc">支付成功后直接回本站提取</span>
+                </div>
+            </div>
+
+            <div class="landing-actions">
+                <a class="button" href="{% url 'pickup_lookup' %}">立即自助提取</a>
+                {% if line_package %}
+                    <a class="button secondary" href="{% url 'package_detail' line_package.pk %}">先看按条购买</a>
+                {% endif %}
+            </div>
+        </div>
+        <aside class="hero-contact-card">
+            <div class="hero-side-top">
+                <p class="panel-tag">人工协助</p>
+                <h3>联系方式</h3>
+                <p class="contact-meta">后台可随时替换联系方式图片</p>
+            </div>
+            <div class="hero-side-copy">
+                <p>异常订单、补发与核对可直接通过下方联系方式图片处理。</p>
+            </div>
+            {% if site_contact_config and site_contact_config.contact_image_1 %}
+                <div class="qr-card hero-qr-card">
+                    <img class="qr-image" src="{{ site_contact_config.contact_image_1.url }}" alt="联系方式图片1">
+                </div>
+            {% endif %}
+            {% if site_contact_config and site_contact_config.contact_image_2 %}
+                <div class="qr-card hero-qr-card">
+                    <img class="qr-image" src="{{ site_contact_config.contact_image_2.url }}" alt="联系方式图片2">
+                </div>
+            {% endif %}
+            {% if not site_contact_config or not site_contact_config.contact_image_1 and not site_contact_config.contact_image_2 %}
+                <div class="muted">后台暂未上传联系方式图片。</div>
+            {% endif %}
+        </aside>
+    </section>
+
+    <section class="entry-dual-grid">
+        <article class="product-panel buy-panel">
+            <div class="panel-head panel-head-vertical">
+                <div class="panel-title-wrap">
+                    <p class="panel-tag">按条售卖</p>
+                    <h2>{{ line_package.name|default:"按条售卖" }}</h2>
+                    <p class="panel-desc">{{ line_package.description|default:"适合零散购买，买几条发几条。" }}</p>
+                </div>
+                <div class="price-badge">
+                    <span>单价</span>
+                    <strong>¥{{ line_package.price|default:"0.30" }}</strong>
+                </div>
+            </div>
+            <div class="stat-row stat-row-strong">
+                <span
+                    id="line-stock-text"
+                    {% if line_package %}data-inventory-url="{% url 'inventory_status' line_package.pk %}"{% endif %}
+                >剩余 {{ line_package.available_unit_count|default:"0" }} 条</span>
+                <span>{{ line_package.price|default:"0.30" }} 元 / 条</span>
+            </div>
+            {% if line_package %}
+                <a class="button" href="{% url 'package_detail' line_package.pk %}">进入按条购买</a>
+            {% else %}
+                <span class="button disabled">后台未配置</span>
+            {% endif %}
+        </article>
+
+        <article class="product-panel buy-panel">
+            <div class="panel-head panel-head-vertical">
+                <div class="panel-title-wrap">
+                    <p class="panel-tag">按组售卖</p>
+                    <h2>{{ group_package.name|default:"按组售卖" }}</h2>
+                    <p class="panel-desc">{{ group_package.description|default:"按组购买享有管理员权限，一组约 47 到 50 条，整组原样发货。" }}</p>
+                </div>
+                <div class="price-badge">
+                    <span>整组价</span>
+                    <strong>¥{{ group_package.price|default:"25.00" }}</strong>
+                </div>
+            </div>
+            <div class="stat-row stat-row-strong">
+                <span
+                    id="group-stock-text"
+                    {% if group_package %}data-inventory-url="{% url 'inventory_status' group_package.pk %}"{% endif %}
+                >剩余 {{ group_package.available_unit_count|default:"0" }} 组</span>
+                <span>{{ group_package.price|default:"25.00" }} 元 / 组</span>
+            </div>
+            {% if group_package %}
+                <a class="button" href="{% url 'package_detail' group_package.pk %}">进入按组购买</a>
+            {% else %}
+                <span class="button disabled">后台未配置</span>
+            {% endif %}
+        </article>
+    </section>
+
+    <section class="card order-card">
+        <div class="section-title-row">
+            <div>
+                <p class="panel-tag">长期使用说明</p>
+                <h2>购买前可以先看这几点</h2>
+            </div>
+        </div>
+        <div class="compact-note-list detail-note-list">
+            <div>所有邮箱均可长期使用，后续只需按正常规则续费域名即可继续使用。</div>
+            <div>域名默认有效期一年，到期前按正常规则续费即可继续长期使用。</div>
+            <div>每一组都是独立后台，不是共用大后台，日常使用更稳。</div>
+            <div>按当前历史反馈，整体封控率极低，已经售出了几千组，暂未收到整组封控反馈。</div>
+            <div>正常使用场景下，绝对不会存在删除，也不会出现被他人改密码的情况。</div>
+            <div>做游戏账号最重要的就是稳定和长期使用，适合长期养号与持续使用。</div>
+            <div>所有域名均独立处理，不会全部关联在一起，单独异常也不会连带影响到你的整组使用。</div>
+        </div>
+    </section>
+</section>
+
+<script>
+async function refreshInventoryText(elementId) {
+    const el = document.getElementById(elementId);
+    if (!el || !el.dataset.inventoryUrl) return;
+    try {
+        const response = await fetch(el.dataset.inventoryUrl, {cache: "no-store"});
+        if (!response.ok) return;
+        const data = await response.json();
+        el.textContent = `剩余 ${data.available_unit_count} ${data.unit_label}`;
+    } catch (error) {
+    }
+}
+
+function refreshHomeInventory() {
+    refreshInventoryText("line-stock-text");
+    refreshInventoryText("group-stock-text");
+}
+
+refreshHomeInventory();
+setInterval(refreshHomeInventory, 5000);
+</script>
+{% endblock %}

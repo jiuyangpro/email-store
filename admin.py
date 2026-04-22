@@ -140,6 +140,7 @@ class PackageAdminForm(forms.ModelForm):
             "agent_floor_price",
             "original_price",
             "stock_mode",
+            "twofa_status",
             "is_active",
         ]
 
@@ -153,6 +154,7 @@ class PackageAdminForm(forms.ModelForm):
         self.fields["original_price"].label = "划线价"
         self.fields["agent_floor_price"].label = "代理底价"
         self.fields["stock_mode"].label = "售卖类型"
+        self.fields["twofa_status"].label = "2FA状态"
         self.fields["is_active"].label = "是否上架"
         self.fields["name"].widget.attrs.update({"placeholder": "比如：按条购买 / 按组购买"})
         self.fields["subtitle"].widget.attrs.update({"placeholder": "比如：自动顺序发货 / 整组原样发货"})
@@ -166,6 +168,7 @@ class PackageAdminForm(forms.ModelForm):
         elif self.instance.pk and self.instance.price:
             self.fields["agent_floor_price"].initial = self.instance.price
         self.fields["stock_mode"].help_text = "按条购买选按条售卖；按组购买选按组售卖"
+        self.fields["twofa_status"].help_text = "选择商品的 2FA 状态"
         self.fields["is_active"].help_text = "正式上架商品请始终只保留 2 个：按条 1 个，按组 1 个。"
         self.pending_line_contents = []
         self.pending_group_contents = []
@@ -342,13 +345,7 @@ def _split_group_blocks(text):
 
 
 def _split_line_blocks(text):
-    lines = []
-    for line in text.splitlines():
-        stripped = line.strip()
-        if stripped:
-            # 处理账号----密码----密钥 或 账号----密码 格式
-            lines.append(stripped)
-    return lines
+    return [line.strip() for line in text.splitlines() if line.strip()]
 
 
 def _build_pending_imports(stock_mode, bulk_text, bulk_groups):
@@ -405,6 +402,7 @@ class PackageAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "stock_mode",
+        "twofa_status",
         "stock_totals",
         "stock_view_link",
         "price",
@@ -414,8 +412,8 @@ class PackageAdmin(admin.ModelAdmin):
         "created_at",
     )
     list_display_links = ("name",)
-    list_editable = ("price", "original_price", "is_active")
-    list_filter = ("delivery_mode", "stock_mode", "is_active", "created_at")
+    list_editable = ("price", "original_price", "is_active", "twofa_status")
+    list_filter = ("delivery_mode", "stock_mode", "twofa_status", "is_active", "created_at")
     search_fields = ("name", "subtitle", "description")
     inlines = ()
     actions = ("clear_sold_stock", "merge_unsold_stock_into_primary")
@@ -427,6 +425,7 @@ class PackageAdmin(admin.ModelAdmin):
         "agent_floor_price",
         "original_price",
         "stock_mode",
+        "twofa_status",
         "is_active",
         "bulk_import_text",
         "bulk_import_text_file",
