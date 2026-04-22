@@ -307,14 +307,34 @@ class PackageAdminForm(forms.ModelForm):
         if self._stock_import_done:
             return
         if instance.stock_mode == Package.STOCK_LINE and self.pending_line_contents:
-            items = [StockItem(package=instance, content=content) for content in self.pending_line_contents]
+            items = []
+            for content in self.pending_line_contents:
+                # 检测是否包含2FA密钥（格式：账号----密码----密钥）
+                parts = content.split('----')
+                twofa_status = StockItem.TWOFA_NO
+                if len(parts) >= 3 and parts[2].strip():
+                    # 包含密钥，设置为已开通2fa
+                    twofa_status = StockItem.TWOFA_HAS
+                items.append(StockItem(package=instance, content=content, twofa_status=twofa_status))
             StockItem.objects.bulk_create(items)
             self.imported_line_count = len(items)
         if instance.stock_mode == Package.STOCK_GROUP and self.pending_group_payloads:
-            items = [
-                StockItem(package=instance, content=payload["content"], inbox_url=payload["inbox_url"])
-                for payload in self.pending_group_payloads
-            ]
+            items = []
+            for payload in self.pending_group_payloads:
+                content = payload["content"]
+                # 检测是否包含2FA密钥
+                lines = content.splitlines()
+                twofa_status = StockItem.TWOFA_NO
+                for line in lines:
+                    if "----" in line:
+                        parts = line.split('----')
+                        if len(parts) >= 3 and parts[2].strip():
+                            # 包含密钥，设置为已开通2fa
+                            twofa_status = StockItem.TWOFA_HAS
+                            break
+                items.append(
+                    StockItem(package=instance, content=content, inbox_url=payload["inbox_url"], twofa_status=twofa_status)
+                )
             StockItem.objects.bulk_create(items)
             self.imported_group_count = len(items)
         imported_emails = []

@@ -999,7 +999,7 @@ def package_detail(request, pk):
                 is_active=True
             )
             for group_package in group_packages:
-                for stock_item in group_package.stock_items.filter(is_sold=False):
+                for stock_item in group_package.stock_items.filter(is_sold=False, twofa_status=status):
                     # 计算组内账号数量（排除分组标记行）
                     lines = [line.strip() for line in stock_item.content.splitlines() if line.strip() and "----" in line]
                     if lines:
@@ -1012,12 +1012,9 @@ def package_detail(request, pk):
             package=package,
             is_sold=False
         ):
-            # 简单起见，我们假设每组的 2FA 状态相同，取第一个账号的状态
-            lines = [line.strip() for line in stock_item.content.splitlines() if line.strip() and "----" in line]
-            if lines:
-                # 这里需要根据实际情况获取 2FA 状态，暂时假设默认状态
-                # 实际应用中，可能需要解析内容来判断 2FA 状态
-                twofa_statuses["no_2fa"]["count"] += 1
+            # 使用库存项的twofa_status字段
+            twofa_status = stock_item.twofa_status
+            twofa_statuses[twofa_status]["count"] += 1
     
     quantity_options = range(1, package.available_unit_count + 1)
     return render(
