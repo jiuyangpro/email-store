@@ -244,6 +244,16 @@ class Order(models.Model):
 
 
 class StockItem(models.Model):
+    # 2FA状态选项
+    TWOFA_NO = "no_2fa"
+    TWOFA_HAS = "has_2fa"
+    TWOFA_HAS_YOUTUBE = "has_2fa_youtube"
+    TWOFA_STATUS_CHOICES = [
+        (TWOFA_NO, "未开2fa"),
+        (TWOFA_HAS, "已开通2fa"),
+        (TWOFA_HAS_YOUTUBE, "已开通2fa可登录油管"),
+    ]
+    
     package = models.ForeignKey(
         Package,
         on_delete=models.CASCADE,
@@ -252,6 +262,12 @@ class StockItem(models.Model):
     )
     content = models.TextField(verbose_name="发货内容")
     inbox_url = models.CharField(max_length=255, blank=True, default="", verbose_name="接码网址")
+    twofa_status = models.CharField(
+        max_length=20,
+        choices=TWOFA_STATUS_CHOICES,
+        default=TWOFA_NO,
+        verbose_name="2FA状态",
+    )
     is_sold = models.BooleanField(default=False, verbose_name="是否已售")
     sold_order = models.ForeignKey(
         Order,
