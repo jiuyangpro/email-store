@@ -1463,7 +1463,7 @@ def _allocate_stock_items(order):
                         package=order.package,
                         content=child_accounts[i],
                         inbox_url=group_item.inbox_url,
-                        twofa_status=twofa_status or StockItem.TWOFA_NO
+                        twofa_status=group_item.twofa_status  # 使用组库存项的实际 2FA 状态
                     )
                     new_stock_item.save()
                     items.append(new_stock_item)

@@ -156,6 +156,40 @@ class Package(models.Model):
         else:
             # 按组售卖：只计算组库存
             return self.stock_items.filter(is_sold=False).count()
+    
+    def available_stock_count_by_twofa(self, twofa_status):
+        """按 2FA 状态计算可用库存数量"""
+        if self.stock_mode == self.STOCK_LINE:
+            # 按条售卖：计算当前按条库存 + 组库存中可转换的数量
+            line_count = self.stock_items.filter(
+                is_sold=False,
+                twofa_status=twofa_status
+            ).count()
+            # 计算组库存中可转换的数量（每组减去1个主账号）
+            group_packages = Package.objects.filter(
+                stock_mode=self.STOCK_GROUP,
+                delivery_mode=self.DELIVERY_STOCK,
+                is_active=True
+            )
+            group_count = 0
+            for group_package in group_packages:
+                # 计算每组中的账号数量（通过内容行数计算）
+                for stock_item in group_package.stock_items.filter(
+                    is_sold=False,
+                    twofa_status=twofa_status
+                ):
+                    # 计算组内账号数量（排除分组标记行）
+                    lines = [line.strip() for line in stock_item.content.splitlines() if line.strip() and "----" in line]
+                    if lines:
+                        # 减去1个主账号
+                        group_count += max(0, len(lines) - 1)
+            return line_count + group_count
+        else:
+            # 按组售卖：只计算组库存
+            return self.stock_items.filter(
+                is_sold=False,
+                twofa_status=twofa_status
+            ).count()
 
     @property
     def available_unit_count(self):
