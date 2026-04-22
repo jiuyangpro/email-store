@@ -1357,11 +1357,71 @@ def _allocate_stock_items(order):
         return True
 
     needed = target_count - allocated_count
+    
+    # 尝试从按条库存中分配
     items = list(
         StockItem.objects.select_for_update()
         .filter(package=order.package, is_sold=False)
         .order_by("id")[:needed]
     )
+    
+    # 如果按条库存不足，且是按条售卖的商品，则从组库存中转换
+    if len(items) < needed and order.package.stock_mode == Package.STOCK_LINE:
+        remaining_needed = needed - len(items)
+        
+        # 查找所有活跃的组库存商品
+        group_packages = Package.objects.filter(
+            stock_mode=Package.STOCK_GROUP,
+            delivery_mode=Package.DELIVERY_STOCK,
+            is_active=True
+        )
+        
+        # 收集所有组库存项，并按账号数量排序（从小到大）
+        group_stock_items = []
+        for group_package in group_packages:
+            for stock_item in group_package.stock_items.filter(is_sold=False):
+                lines = [line.strip() for line in stock_item.content.splitlines() if line.strip() and "----" in line]
+                if lines and len(lines) > 1:  # 至少有主账号和一个子账号
+                    group_stock_items.append((len(lines), stock_item))
+        
+        # 按账号数量从小到大排序
+        group_stock_items.sort(key=lambda x: x[0])
+        
+        # 从组库存中转换账号
+        for _, group_item in group_stock_items:
+            if remaining_needed <= 0:
+                break
+            
+            # 提取组内的账号
+            lines = [line.strip() for line in group_item.content.splitlines() if line.strip() and "----" in line]
+            if len(lines) > 1:
+                # 保留主账号，提取子账号
+                child_accounts = lines[1:]
+                # 计算可提取的子账号数量
+                extract_count = min(remaining_needed, len(child_accounts))
+                
+                # 创建新的按条库存
+                for i in range(extract_count):
+                    new_stock_item = StockItem(
+                        package=order.package,
+                        content=child_accounts[i],
+                        inbox_url=group_item.inbox_url
+                    )
+                    new_stock_item.save()
+                    items.append(new_stock_item)
+                
+                remaining_needed -= extract_count
+                
+                # 更新组库存内容（移除已提取的子账号）
+                if len(child_accounts) > extract_count:
+                    # 保留主账号和剩余子账号
+                    new_content = lines[0] + "\n" + "\n".join(child_accounts[extract_count:])
+                    group_item.content = new_content
+                    group_item.save(update_fields=["content"])
+                else:
+                    # 所有子账号都被提取，删除该组库存
+                    group_item.delete()
+    
     if len(items) < needed:
         return False
 
