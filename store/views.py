@@ -985,11 +985,27 @@ def package_detail(request, pk):
     # 计算不同 2FA 状态的库存数量
     if package.stock_mode == Package.STOCK_LINE:
         for status, info in twofa_statuses.items():
-            info["count"] = StockItem.objects.filter(
+            # 计算当前商品的按条库存
+            line_count = StockItem.objects.filter(
                 package=package,
                 is_sold=False,
                 twofa_status=status
             ).count()
+            # 计算组库存中可转换的数量
+            group_count = 0
+            group_packages = Package.objects.filter(
+                stock_mode=Package.STOCK_GROUP,
+                delivery_mode=Package.DELIVERY_STOCK,
+                is_active=True
+            )
+            for group_package in group_packages:
+                for stock_item in group_package.stock_items.filter(is_sold=False):
+                    # 计算组内账号数量（排除分组标记行）
+                    lines = [line.strip() for line in stock_item.content.splitlines() if line.strip() and "----" in line]
+                    if lines:
+                        # 减去1个主账号
+                        group_count += max(0, len(lines) - 1)
+            info["count"] = line_count + group_count
     else:
         # 按组售卖时，计算每组的 2FA 状态
         for stock_item in StockItem.objects.filter(
