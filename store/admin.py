@@ -410,11 +410,32 @@ def _build_pending_imports(stock_mode, bulk_text, bulk_groups):
     pending_line_contents = _split_line_blocks(bulk_text) if bulk_text else []
     pending_group_contents = _split_group_blocks(bulk_groups) if bulk_groups else []
 
+    # 处理组库存：如果每组账号数量小于或等于46个，去除主账号加入按条售卖
+    processed_group_contents = []
+    for group in pending_group_contents:
+        # 计算组内账号数量（排除分组标记行）
+        lines = [line.strip() for line in group.splitlines() if line.strip() and "----" in line]
+        if len(lines) <= 46:
+            # 小于或等于46个账号，去除主账号，将子账号加入按条售卖
+            if len(lines) > 1:
+                pending_line_contents.extend(lines[1:])
+        else:
+            # 47个以上账号，保留为组售卖
+            processed_group_contents.append(group)
+    pending_group_contents = processed_group_contents
+
     # For single-group补货，很多人会把整组内容直接贴到“按条”导入框里。
     # 按组商品这里做一次兼容：如果真正的按组输入为空，就把整段文本当成 1 组。
     if stock_mode == Package.STOCK_GROUP and not pending_group_contents and bulk_text.strip():
-        pending_group_contents = [bulk_text.strip()]
-        pending_line_contents = []
+        # 检查整段文本的账号数量
+        lines = [line.strip() for line in bulk_text.splitlines() if line.strip() and "----" in line]
+        if len(lines) > 46:
+            pending_group_contents = [bulk_text.strip()]
+            pending_line_contents = []
+        else:
+            # 小于或等于46个账号，去除主账号，将子账号加入按条售卖
+            if len(lines) > 1:
+                pending_line_contents.extend(lines[1:])
 
     # 反向兼容：按条商品如果误用了按组输入框，就自动打平成逐条库存。
     if stock_mode == Package.STOCK_LINE and not pending_line_contents and pending_group_contents:
