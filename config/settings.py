@@ -34,7 +34,7 @@ ALLOWED_HOSTS = [
     host.strip()
     for host in os.getenv(
         "ALLOWED_HOSTS",
-        "127.0.0.1,localhost,google888.asia,www.google888.asia",
+        "127.0.0.1,localhost,google888.asia,www.google888.asia,ceshi88888.asia",
     ).split(",")
     if host.strip()
 ]
@@ -43,12 +43,12 @@ CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
         "CSRF_TRUSTED_ORIGINS",
-        "https://google888.asia,https://www.google888.asia",
+        "https://google888.asia,https://www.google888.asia,https://ceshi88888.asia",
     ).split(",")
     if origin.strip()
 ]
 
-SITE_BASE_URL = os.getenv("SITE_BASE_URL", "https://google888.asia").rstrip("/")
+SITE_BASE_URL = os.getenv("SITE_BASE_URL", "https://ceshi88888.asia").rstrip("/")
 
 # Trust the reverse proxy so Django treats Cloudflare/Nginx HTTPS requests as secure.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
