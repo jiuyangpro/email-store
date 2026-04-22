@@ -332,13 +332,68 @@ class PackageAdminForm(forms.ModelForm):
 
 def _split_group_blocks(text):
     normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+    # 支持三种分组方式：
+    # 1. ====GROUP==== 分隔符
+    # 2. 空行分隔
+    # 3. ------域名_数字-------- 格式的分组标记
     if "====GROUP====" in normalized:
         parts = normalized.split("====GROUP====")
     else:
-        # Support the common "blank line between groups" input style in addition to
-        # the explicit ====GROUP==== separator.
-        parts = re.split(r"\n\s*\n+", normalized)
-    return [part.strip() for part in parts if part.strip()]
+        # 先按 ------域名_数字-------- 格式分割
+        group_markers = re.findall(r'------[^_]+_\d+--------', normalized)
+        if group_markers:
+            parts = []
+            current = normalized
+            for marker in group_markers:
+                if marker in current:
+                    before, after = current.split(marker, 1)
+                    if before.strip():
+                        parts.append(before)
+                    # 提取标记后的内容直到下一个标记
+                    next_marker_idx = None
+                    for next_marker in group_markers:
+                        if next_marker != marker and next_marker in after:
+                            if next_marker_idx is None or after.index(next_marker) < next_marker_idx:
+                                next_marker_idx = after.index(next_marker)
+                    if next_marker_idx is not None:
+                        parts.append(marker + after[:next_marker_idx])
+                        current = after[next_marker_idx:]
+                    else:
+                        parts.append(marker + after)
+                        current = ""
+            if current.strip():
+                parts.append(current)
+        else:
+            # 空行分隔
+            parts = re.split(r"\n\s*\n+", normalized)
+    
+    # 处理每个组，确保每组最多50个账号
+    processed_parts = []
+    for part in parts:
+        if not part.strip():
+            continue
+        # 提取账号行
+        lines = [line.strip() for line in part.splitlines() if line.strip() and "----" in line]
+        # 每组最多50个账号
+        if len(lines) > 50:
+            # 超过50个账号时，分成多个组
+            for i in range(0, len(lines), 50):
+                group_lines = lines[i:i+50]
+                # 保留分组标记（如果有）
+                if "------" in part and i == 0:
+                    # 找到分组标记
+                    marker_match = re.search(r'------[^_]+_\d+--------', part)
+                    if marker_match:
+                        marker = marker_match.group(0)
+                        processed_parts.append(marker + "\n" + "\n".join(group_lines))
+                    else:
+                        processed_parts.append("\n".join(group_lines))
+                else:
+                    processed_parts.append("\n".join(group_lines))
+        else:
+            processed_parts.append(part.strip())
+    
+    return processed_parts
 
 
 def _split_line_blocks(text):
