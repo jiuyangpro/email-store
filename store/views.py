@@ -945,18 +945,27 @@ def agent_update_prices(request):
 
 def home(request):
     packages = Package.objects.filter(is_active=True)
-    line_package = packages.filter(
+    # 获取按条售卖的商品
+    line_packages = packages.filter(
         delivery_mode=Package.DELIVERY_STOCK,
         stock_mode=Package.STOCK_LINE,
-    ).annotate(
-        unsold_count=Count("stock_items", filter=Q(stock_items__is_sold=False))
-    ).order_by("-unsold_count", "-id").first()
-    group_package = packages.filter(
+    )
+    # 按 available_stock_count 排序，获取库存最多的按条商品
+    if line_packages.exists():
+        line_package = sorted(line_packages, key=lambda p: p.available_stock_count, reverse=True)[0]
+    else:
+        line_package = None
+    
+    # 获取按组售卖的商品
+    group_packages = packages.filter(
         delivery_mode=Package.DELIVERY_STOCK,
         stock_mode=Package.STOCK_GROUP,
-    ).annotate(
-        unsold_count=Count("stock_items", filter=Q(stock_items__is_sold=False))
-    ).order_by("-unsold_count", "-id").first()
+    )
+    # 按 available_stock_count 排序，获取库存最多的按组商品
+    if group_packages.exists():
+        group_package = sorted(group_packages, key=lambda p: p.available_stock_count, reverse=True)[0]
+    else:
+        group_package = None
     return render(
         request,
         "store/home.html",
