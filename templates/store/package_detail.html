@@ -163,6 +163,15 @@
                 <input id="pickup_password" name="pickup_password" type="password" placeholder="自己设置一个提取密码" required>
 
                 {% if package.delivery_mode == "stock" %}
+                    <label for="twofa_status">2FA状态</label>
+                    <select id="twofa_status" name="twofa_status" required>
+                        {% for status, info in twofa_statuses.items %}
+                            {% if info.count > 0 %}
+                                <option value="{{ status }}">{{ info.label }} - ¥{{ info.price }} (剩余 {{ info.count }} {{ unit_label }})</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+
                     <label for="quantity">购买数量</label>
                     <input
                         id="quantity"

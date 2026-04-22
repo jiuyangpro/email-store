@@ -182,6 +182,15 @@ class Order(models.Model):
         (AGENT_SETTLEMENT_PENDING, "待结算"),
         (AGENT_SETTLEMENT_SETTLED, "已结算"),
     ]
+    # 2FA状态选项
+    TWOFA_NO = "no_2fa"
+    TWOFA_HAS = "has_2fa"
+    TWOFA_HAS_YOUTUBE = "has_2fa_youtube"
+    TWOFA_STATUS_CHOICES = [
+        (TWOFA_NO, "未开2fa"),
+        (TWOFA_HAS, "已开通2fa"),
+        (TWOFA_HAS_YOUTUBE, "已开通2fa可登录油管"),
+    ]
 
     order_no = models.CharField(max_length=32, unique=True, verbose_name="订单号")
     package = models.ForeignKey(Package, on_delete=models.PROTECT, verbose_name="购买套餐")
@@ -227,6 +236,13 @@ class Order(models.Model):
     payment_type = models.CharField(max_length=30, blank=True, verbose_name="支付方式")
     gateway_trade_no = models.CharField(max_length=64, blank=True, verbose_name="平台订单号")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING, verbose_name="订单状态")
+    twofa_status = models.CharField(
+        max_length=20,
+        choices=TWOFA_STATUS_CHOICES,
+        blank=True,
+        default="",
+        verbose_name="2FA状态",
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     paid_at = models.DateTimeField(blank=True, null=True, verbose_name="支付时间")
 

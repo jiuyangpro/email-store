@@ -457,6 +457,7 @@ def _create_order_from_request(request, package, sale_price, agent=None, detail_
     buyer_contact = request.POST.get("buyer_contact", "").strip()
     pickup_password = request.POST.get("pickup_password", "").strip()
     quantity = _parse_quantity(request.POST.get("quantity", "1"))
+    twofa_status = request.POST.get("twofa_status", "")
 
     if not buyer_contact:
         messages.error(request, "请先填写联系方式。")
@@ -493,6 +494,11 @@ def _create_order_from_request(request, package, sale_price, agent=None, detail_
         quantity=quantity,
         amount=sale_price * quantity,
     )
+    
+    # 保存 2FA 状态到订单对象
+    if twofa_status:
+        order.twofa_status = twofa_status
+        order.save(update_fields=["twofa_status"])
     return redirect("order_detail", pk=order.pk)
 
 
@@ -967,6 +973,36 @@ def package_detail(request, pk):
         Package.objects.filter(is_active=True).prefetch_related("documents"),
         pk=pk,
     )
+    
+    # 获取不同 2FA 状态的库存和价格信息
+    from store.models import StockItem
+    twofa_statuses = {
+        "no_2fa": {"label": "未开2fa", "count": 0, "price": package.price},
+        "has_2fa": {"label": "已开通2fa", "count": 0, "price": package.price},
+        "has_2fa_youtube": {"label": "已开通2fa可登录油管", "count": 0, "price": package.price},
+    }
+    
+    # 计算不同 2FA 状态的库存数量
+    if package.stock_mode == Package.STOCK_LINE:
+        for status, info in twofa_statuses.items():
+            info["count"] = StockItem.objects.filter(
+                package=package,
+                is_sold=False,
+                twofa_status=status
+            ).count()
+    else:
+        # 按组售卖时，计算每组的 2FA 状态
+        for stock_item in StockItem.objects.filter(
+            package=package,
+            is_sold=False
+        ):
+            # 简单起见，我们假设每组的 2FA 状态相同，取第一个账号的状态
+            lines = [line.strip() for line in stock_item.content.splitlines() if line.strip() and "----" in line]
+            if lines:
+                # 这里需要根据实际情况获取 2FA 状态，暂时假设默认状态
+                # 实际应用中，可能需要解析内容来判断 2FA 状态
+                twofa_statuses["no_2fa"]["count"] += 1
+    
     quantity_options = range(1, package.available_unit_count + 1)
     return render(
         request,
@@ -977,6 +1013,7 @@ def package_detail(request, pk):
             "unit_label": _unit_label(package),
             "stock_label": _stock_label(package),
             "site_contact_config": _get_site_contact_config(),
+            "twofa_statuses": twofa_statuses,
         },
     )
 
@@ -1358,10 +1395,17 @@ def _allocate_stock_items(order):
 
     needed = target_count - allocated_count
     
-    # 尝试从按条库存中分配
+    # 获取用户选择的 2FA 状态
+    twofa_status = getattr(order, 'twofa_status', None)
+    
+    # 尝试从按条库存中分配指定 2FA 状态的账号
+    filter_kwargs = {'package': order.package, 'is_sold': False}
+    if twofa_status:
+        filter_kwargs['twofa_status'] = twofa_status
+    
     items = list(
         StockItem.objects.select_for_update()
-        .filter(package=order.package, is_sold=False)
+        .filter(**filter_kwargs)
         .order_by("id")[:needed]
     )
     
@@ -1405,7 +1449,8 @@ def _allocate_stock_items(order):
                     new_stock_item = StockItem(
                         package=order.package,
                         content=child_accounts[i],
-                        inbox_url=group_item.inbox_url
+                        inbox_url=group_item.inbox_url,
+                        twofa_status=twofa_status or StockItem.TWOFA_NO
                     )
                     new_stock_item.save()
                     items.append(new_stock_item)
